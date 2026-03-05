@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/table";
 import { authClient } from "@/lib/auth-client";
 import { api } from "@/utils/api";
+import { AddInvitation } from "./add-invitation";
 import { AddUserPermissions } from "./add-permissions";
 import { ChangeRole } from "./change-role";
 
@@ -44,13 +45,18 @@ export const ShowUsers = () => {
 			<Card className="h-full bg-sidebar  p-2.5 rounded-xl  max-w-5xl mx-auto">
 				<div className="rounded-xl bg-background shadow-md ">
 					<CardHeader className="">
-						<CardTitle className="text-xl flex flex-row gap-2">
-							<Users className="size-6 text-muted-foreground self-center" />
-							Users
-						</CardTitle>
-						<CardDescription>
-							Add your users to your Dokploy account.
-						</CardDescription>
+						<div className="flex justify-between items-start">
+							<div className="flex flex-col gap-1.5">
+								<CardTitle className="text-xl flex flex-row gap-2">
+									<Users className="size-6 text-muted-foreground self-center" />
+									Users
+								</CardTitle>
+								<CardDescription>
+									Add your users to your Dokploy account.
+								</CardDescription>
+							</div>
+							<AddInvitation />
+						</div>
 					</CardHeader>
 					<CardContent className="space-y-2 py-8 border-t">
 						{isPending ? (

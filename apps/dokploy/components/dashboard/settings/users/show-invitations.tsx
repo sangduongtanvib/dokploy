@@ -69,6 +69,9 @@ export const ShowInvitations = () => {
 									</div>
 								) : (
 									<div className="flex flex-col gap-4  min-h-[25vh]">
+										<div className="flex justify-end">
+											<AddInvitation />
+										</div>
 										<Table>
 											<TableCaption>See all invitations</TableCaption>
 											<TableHeader>

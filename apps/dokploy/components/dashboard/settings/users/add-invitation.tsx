@@ -1,4 +1,5 @@
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
+import copy from "copy-to-clipboard";
 import { PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -55,6 +56,7 @@ export const AddInvitation = () => {
 		api.notification.getEmailProviders.useQuery();
 	const { mutateAsync: sendInvitation } = api.user.sendInvitation.useMutation();
 	const [error, setError] = useState<string | null>(null);
+	const [invitationLink, setInvitationLink] = useState<string | null>(null);
 	const { data: activeOrganization } = api.organization.active.useQuery();
 
 	const form = useForm<AddInvitation>({
@@ -67,6 +69,8 @@ export const AddInvitation = () => {
 	});
 	useEffect(() => {
 		form.reset();
+		setInvitationLink(null);
+		setError(null);
 	}, [form, form.formState.isSubmitSuccessful, form.reset]);
 
 	const onSubmit = async (data: AddInvitation) => {
@@ -79,7 +83,11 @@ export const AddInvitation = () => {
 
 		if (result.error) {
 			setError(result.error.message || "");
+			setInvitationLink(null);
 		} else {
+			const link = `${window.location.origin}/invitation?token=${result.data.id}`;
+			setInvitationLink(link);
+			
 			if (!isCloud && data.notificationId) {
 				await sendInvitation({
 					invitationId: result.data.id,
@@ -95,7 +103,7 @@ export const AddInvitation = () => {
 				toast.success("Invitation created");
 			}
 			setError(null);
-			setOpen(false);
+			// Don't close the dialog - let user copy the link
 		}
 
 		utils.organization.allInvitations.invalidate();
@@ -115,7 +123,63 @@ export const AddInvitation = () => {
 				</DialogHeader>
 				{error && <AlertBlock type="error">{error}</AlertBlock>}
 
-				<Form {...form}>
+				{invitationLink ? (
+					<div className="space-y-4">
+						<AlertBlock type="success">
+							<span className="font-semibold">Invitation created successfully!</span>
+							<p className="text-sm mt-1">
+								Share this link with the user to accept the invitation.
+							</p>
+						</AlertBlock>
+						<div className="space-y-2">
+							<label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+								Invitation Link
+							</label>
+							<div className="flex gap-2">
+								<Input
+									value={invitationLink}
+									readOnly
+									className="font-mono text-sm"
+								/>
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => {
+										copy(invitationLink);
+										toast.success("Invitation link copied to clipboard");
+									}}
+								>
+									Copy
+								</Button>
+							</div>
+						</div>
+						<DialogFooter className="flex w-full flex-row gap-2">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => {
+									setOpen(false);
+									form.reset();
+									setInvitationLink(null);
+									setError(null);
+								}}
+							>
+								Close
+							</Button>
+							<Button
+								type="button"
+								onClick={() => {
+									form.reset();
+									setInvitationLink(null);
+									setError(null);
+								}}
+							>
+								Create Another
+							</Button>
+						</DialogFooter>
+					</div>
+				) : (
+					<Form {...form}>
 					<form
 						id="hook-form-add-invitation"
 						onSubmit={form.handleSubmit(onSubmit)}
@@ -221,6 +285,7 @@ export const AddInvitation = () => {
 						</DialogFooter>
 					</form>
 				</Form>
+				)}
 			</DialogContent>
 		</Dialog>
 	);
